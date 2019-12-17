@@ -73,38 +73,29 @@ class CPU:
         """Run the CPU."""
         running = True
 
-
-
         # Instructions Decoded
         HLT = 0b00000001
         LDI = 0b10000010
         PRN = 0b01000111
 
         while running or self.pc < len(self.ram):
-            # print(f"PC= {self.pc}, ram = {self.ram[self.pc]}")
-            # print(f"PC= {1}, ram = {self.ram[1]}")
-            # print(f"PC= {2}, ram = {self.ram[2]}")
-            # print(f"PC= {3}, ram = {self.ram[3]}")
-            # print(f"PC= {4}, ram = {self.ram[4]}")
-            # print(f"---PC--- {self.pc}")
-
             IR = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
+
             if IR == LDI:
-                # Found register number to put value in
-                register = operand_a
+
                 # Now put value in correct register
-                self.reg[register] = operand_b
+                self.reg[operand_a] = operand_b
                 self.pc =+ 3
+
             if IR == PRN:
-                # print(f"in print--- current pc = {self.pc}")
-                register = operand_a
-                print(self.reg[register])
-                self.pc =+ 5
+                print(self.reg[operand_a])
+                self.pc = self.pc + 2
+
             if IR == HLT:
-                # print("In halt")
+
                 running = False
                 return exit()
 
