@@ -11,6 +11,7 @@ class CPU:
         self.ram = [0] * 255
         self.pc = 0
         self.reg = [0] * 8
+        self.sp = 7
 
     def ram_read(self, MAR):
         return self.ram[MAR]
@@ -35,7 +36,7 @@ class CPU:
 
                 val = int(n[0], 2)
                 self.ram[address] = val
-                print("In ram, printed:", self.ram[address])
+                # print("In ram, printed:", self.ram[address])
                 address += 1
 
     def alu(self, op, reg_a, reg_b):
@@ -72,18 +73,21 @@ class CPU:
     def run(self):
         """Run the CPU."""
         running = True
-
+        # Set Stack Pointer
+        self.reg[self.sp] = 244
         # Instructions Decoded
         HLT = 0b00000001
         LDI = 0b10000010
         PRN = 0b01000111
         MUL = 0b10100010
+        POP = 0b01000110
+        PUSH = 0b01000101
 
         while running or self.pc < len(self.ram):
             IR = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
-            print('Running CPU-RUN')
+            # print('Running CPU-RUN')
             if IR == LDI:
 
                 # Now put value in correct register
@@ -103,3 +107,23 @@ class CPU:
                 running = False
                 return exit()
 
+            if IR == POP:
+
+                # Get value at top of stack (it's in the SP register)
+                value = self.ram[self.reg[self.sp]]
+                # Put that value in selected register
+                self.reg[operand_a] = value
+                # Increment stack pointer
+                self.reg[self.sp] += 1
+
+                self.pc += 2
+
+            if IR == PUSH:
+                # Decrement Pointer
+                self.reg[self.sp] -= 1
+                # Get value in register
+                value = self.reg[operand_a]
+                # Add to ram
+                self.ram[self.reg[self.sp]] = value
+
+                self.pc += 2
