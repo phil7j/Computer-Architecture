@@ -84,12 +84,13 @@ class CPU:
         PUSH = 0b01000101
         RET = 0b00010001
         CALL = 0b01010000
+        ADD = 0b10100000
 
         while running or self.pc < len(self.ram):
             IR = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
-            # print('Running CPU-RUN')
+            print('Running ---', IR)
             if IR == LDI:
 
                 # Now put value in correct register
@@ -102,6 +103,10 @@ class CPU:
 
             if IR == MUL:
                 self.alu("MUL", operand_a, operand_b)
+                self.pc += 3
+
+            if IR == ADD:
+                self.alu("ADD", operand_a, operand_b)
                 self.pc += 3
 
             if IR == HLT:
@@ -143,4 +148,10 @@ class CPU:
                 self.pc = self.reg[operand_a]
 
             if IR == RET:
-                pass
+                 # Get value at top of stack (it's in the SP register)
+                value = self.ram[self.reg[self.sp]]
+                # Increment stack pointer
+                self.reg[self.sp] += 1
+
+                # Set PC to value that we popped from the stack
+                self.pc = value
