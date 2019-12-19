@@ -82,6 +82,8 @@ class CPU:
         MUL = 0b10100010
         POP = 0b01000110
         PUSH = 0b01000101
+        RET = 0b00010001
+        CALL = 0b01010000
 
         while running or self.pc < len(self.ram):
             IR = self.ram_read(self.pc)
@@ -121,9 +123,24 @@ class CPU:
             if IR == PUSH:
                 # Decrement Pointer
                 self.reg[self.sp] -= 1
+                # The register to look in, is in operand_a
                 # Get value in register
                 value = self.reg[operand_a]
-                # Add to ram
+                # Add to ram at current spot of the stack
                 self.ram[self.reg[self.sp]] = value
 
                 self.pc += 2
+
+            if IR == CALL:
+                # push address of next instruction to stack
+                # Decrement Pointer
+                self.reg[self.sp] -= 1
+                # Get value of next address of instruction
+                value = self.pc + 2
+                # Add to ram at current spot of the stack
+                self.ram[self.reg[self.sp]] = value
+                # Set PC to address stored in register[operand_a]
+                self.pc = self.reg[operand_a]
+
+            if IR == RET:
+                pass
