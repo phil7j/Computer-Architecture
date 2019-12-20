@@ -12,6 +12,7 @@ class CPU:
         self.pc = 0
         self.reg = [0] * 8
         self.sp = 7
+        self.fl = 6
 
     def ram_read(self, MAR):
         return self.ram[MAR]
@@ -45,8 +46,12 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         elif op == "MUL":
-             self.reg[reg_a] *= self.reg[reg_b]
-        #elif op == "SUB": etc
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.reg[self.fl] = 1
+            else:
+                self.reg[self.fl] = 0
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -75,6 +80,8 @@ class CPU:
         running = True
         # Set Stack Pointer
         self.reg[self.sp] = 244
+        # Set Flag register
+        self.reg[self.fl] = 0
         # Instructions Decoded
         HLT = 0b00000001
         LDI = 0b10000010
@@ -85,12 +92,34 @@ class CPU:
         RET = 0b00010001
         CALL = 0b01010000
         ADD = 0b10100000
+        CMP = 0b10100111
+        JMP = 0b01010100
+        JEQ = 0b01010101
+        JNE = 0b01010110
 
         while running or self.pc < len(self.ram):
             IR = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
-            print('Running ---', IR)
+            # print('Running ---', IR)
+            # print("PC = ", self.pc)
+            if IR == JEQ:
+                # print("Should be equal if 1:", self.reg[self.fl])
+                if self.reg[self.fl] == 1:
+                    # print("Jumping to:", self.reg[operand_a])
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
+            if IR == JNE:
+                if self.reg[self.fl] == 0:
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
+            if IR == JMP:
+                self.pc = self.reg[operand_a]
+            if IR == CMP:
+                self.alu("CMP", operand_a, operand_b)
+                self.pc += 3
             if IR == LDI:
 
                 # Now put value in correct register
